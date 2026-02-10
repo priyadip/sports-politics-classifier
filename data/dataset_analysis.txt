@@ -1,0 +1,39 @@
+======================================================================
+DATASET ANALYSIS REPORT
+======================================================================
+
+Total Samples: 6436
+
+Class Distribution:
+  politics: 3581 (55.6%)
+  sport: 2855 (44.4%)
+
+Text Statistics:
+  Average text length: 782.7 characters
+  Average word count: 126.1 words
+
+Per-Class Statistics:
+
+  POLITICS:
+    Samples: 3581
+    Avg words: 126.2
+    Word range: 18 - 4432
+
+  SPORT:
+    Samples: 2855
+    Avg words: 126.1
+    Word range: 31 - 1662
+
+Vocabulary Analysis:
+
+  POLITICS:
+    Total words: 280520
+    Unique words: 18715
+    Vocabulary richness: 0.0667
+    Top 10 words: ['said', 'india', 'minister', 'new', 'government', 'trade', 'would', 'party', 'election', 'budget']
+
+  SPORT:
+    Total words: 219412
+    Unique words: 17500
+    Vocabulary richness: 0.0798
+    Top 10 words: ['world', 'cup', 'india', 'said', 'team', 'new', 'england', 'win', 'year', 'first']

@@ -1,0 +1,6 @@
+classifier,accuracy_mean,accuracy_std,accuracy_max,f1_score_mean,f1_score_std,f1_score_max,cv_mean_mean,cv_mean_std
+gradient_boosting,0.8801,0.0057,0.8851,0.8784,0.0059,0.8835,0.8786,0.0026
+logistic_regression,0.9089,0.0025,0.9123,0.9084,0.0027,0.9121,0.8952,0.0061
+naive_bayes,0.8916,0.0018,0.8944,0.8905,0.0019,0.8935,0.8884,0.002
+random_forest,0.9079,0.0019,0.9107,0.9073,0.002,0.9103,0.8929,0.0022
+svm,0.9081,0.0067,0.9146,0.9079,0.0067,0.9144,0.8928,0.0099
