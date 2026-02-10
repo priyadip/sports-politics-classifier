@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports vs Politics Text Classifier — Priyadip Sau</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════════
+           CSS VARIABLES & RESET
+           ═══════════════════════════════════════════════════ */
+        :root {
+            --gold-50: #FFFDF5;
+            --gold-100: #FFF9E0;
+            --gold-200: #FFF0B8;
+            --gold-300: #FFE47A;
+            --gold-400: #FFD43B;
+            --gold-500: #F5B800;
+            --gold-600: #D9A000;
+            --gold-700: #B07D00;
+            --gold-800: #7A5600;
+            --gold-900: #4A3400;
+            --charcoal: #1A1814;
+            --charcoal-light: #2D2A24;
+            --charcoal-mid: #3E3A32;
+            --warm-white: #FBF8F0;
+            --warm-gray: #A8A29E;
+            --warm-gray-light: #D6D3CD;
+            --accent-red: #E85D4A;
+            --accent-teal: #2D9C8F;
+            --accent-blue: #4A7CDE;
+            --shadow-sm: 0 1px 3px rgba(26,24,20,0.06);
+            --shadow-md: 0 4px 16px rgba(26,24,20,0.08);
+            --shadow-lg: 0 8px 40px rgba(26,24,20,0.12);
+            --shadow-xl: 0 20px 60px rgba(26,24,20,0.15);
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 32px;
+            --font-display: 'DM Serif Display', Georgia, serif;
+            --font-body: 'Outfit', -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        *, *::before, *::after {
+            margin: 0; padding: 0; box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--warm-white);
+            color: var(--charcoal);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        ::selection {
+            background: var(--gold-300);
+            color: var(--charcoal);
+        }
+
+        /* ═══════════════════════════════════════════════════
+           NOISE TEXTURE OVERLAY
+           ═══════════════════════════════════════════════════ */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* ═══════════════════════════════════════════════════
+           SCROLLBAR
+           ═══════════════════════════════════════════════════ */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--gold-100); }
+        ::-webkit-scrollbar-thumb { background: var(--gold-400); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-500); }
+
+        /* ═══════════════════════════════════════════════════
+           NAVIGATION
+           ═══════════════════════════════════════════════════ */
+        .nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            padding: 0 2rem;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            backdrop-filter: blur(0px);
+            background: transparent;
+        }
+
+        .nav.scrolled {
+            background: rgba(251, 248, 240, 0.92);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 1px 0 rgba(26,24,20,0.06);
+        }
+
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .nav-logo {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            color: var(--charcoal);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-logo span { color: var(--gold-600); }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--charcoal-mid);
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 0;
+            width: 0; height: 2px;
+            background: var(--gold-500);
+            transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .nav-links a:hover { color: var(--charcoal); }
+        .nav-links a:hover::after { width: 100%; }
+
+        .nav-hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px;
+        }
+        .nav-hamburger span {
+            display: block;
+            width: 24px; height: 2px;
+            background: var(--charcoal);
+            transition: all 0.3s;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           HERO SECTION
+           ═══════════════════════════════════════════════════ */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(170deg, var(--gold-100) 0%, var(--warm-white) 40%, var(--gold-50) 100%);
+        }
+
+        .hero-bg-shapes {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .hero-bg-shapes .circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.12;
+        }
+
+        .hero-bg-shapes .c1 {
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, var(--gold-400), transparent 70%);
+            top: -200px; right: -100px;
+            animation: float-slow 20s ease-in-out infinite;
+        }
+
+        .hero-bg-shapes .c2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, var(--gold-300), transparent 70%);
+            bottom: -100px; left: -50px;
+            animation: float-slow 16s ease-in-out infinite reverse;
+        }
+
+        .hero-bg-shapes .c3 {
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, var(--accent-teal), transparent 70%);
+            top: 30%; left: 10%;
+            animation: float-slow 12s ease-in-out infinite 3s;
+        }
+
+        @keyframes float-slow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -20px) scale(1.05); }
+            66% { transform: translate(-20px, 15px) scale(0.95); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 900px;
+            padding: 2rem;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gold-200);
+            color: var(--gold-800);
+            padding: 0.4rem 1.2rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s 0.2s forwards;
+        }
+
+        .hero-badge .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--gold-600);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.5); }
+        }
+
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2.4rem, 6vw, 4.2rem);
+            line-height: 1.15;
+            color: var(--charcoal);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 0.8s 0.4s forwards;
+        }
+
+        .hero h1 .highlight {
+            background: linear-gradient(120deg, var(--gold-400) 0%, var(--gold-500) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.15rem;
+            font-weight: 300;
+            color: var(--charcoal-mid);
+            max-width: 640px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.8;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 0.8s 0.6s forwards;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s 0.8s forwards;
+        }
+
+        .hero-meta-item {
+            font-size: 0.85rem;
+            color: var(--warm-gray);
+            font-weight: 500;
+        }
+
+        .hero-meta-item strong {
+            color: var(--charcoal);
+        }
+
+        .hero-actions {
+            margin-top: 2.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s 1s forwards;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.8rem;
+            border-radius: var(--radius-md);
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .btn-primary {
+            background: var(--charcoal);
+            color: var(--gold-100);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            background: var(--charcoal-light);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--charcoal);
+            border: 1.5px solid var(--warm-gray-light);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--gold-400);
+            background: var(--gold-100);
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ═══════════════════════════════════════════════════
+           STATS BANNER
+           ═══════════════════════════════════════════════════ */
+        .stats-banner {
+            background: var(--charcoal);
+            padding: 3rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, var(--gold-700) 0%, transparent 50%);
+            opacity: 0.08;
+        }
+
+        .stats-grid {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            position: relative;
+        }
+
+        .stat-card {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: var(--font-display);
+            font-size: 2.8rem;
+            color: var(--gold-400);
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--warm-gray);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-top: 0.3rem;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           SECTION LAYOUT
+           ═══════════════════════════════════════════════════ */
+        .section {
+            padding: 5rem 2rem;
+        }
+
+        .section-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            margin-bottom: 3rem;
+        }
+
+        .section-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--gold-700);
+            background: var(--gold-200);
+            padding: 0.3rem 0.9rem;
+            border-radius: 99px;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: clamp(1.8rem, 4vw, 2.6rem);
+            line-height: 1.2;
+            color: var(--charcoal);
+            margin-bottom: 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        .section-desc {
+            font-size: 1.05rem;
+            color: var(--charcoal-mid);
+            max-width: 680px;
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           REVEAL ANIMATIONS
+           ═══════════════════════════════════════════════════ */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+
+        /* ═══════════════════════════════════════════════════
+           ABOUT / METHODOLOGY CARDS
+           ═══════════════════════════════════════════════════ */
+        .method-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .method-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            border: 1px solid rgba(26,24,20,0.06);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .method-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: linear-gradient(90deg, var(--gold-400), var(--gold-600));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .method-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .method-card:hover::before { transform: scaleX(1); }
+
+        .method-icon {
+            width: 44px; height: 44px;
+            border-radius: var(--radius-md);
+            background: var(--gold-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .method-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .method-card p {
+            font-size: 0.9rem;
+            color: var(--charcoal-mid);
+            line-height: 1.7;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           DATA SOURCE PIPELINE
+           ═══════════════════════════════════════════════════ */
+        .pipeline {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            justify-content: center;
+        }
+
+        .pipeline-node {
+            background: white;
+            border: 1.5px solid var(--gold-300);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.5rem;
+            text-align: center;
+            min-width: 150px;
+            transition: all 0.3s;
+        }
+
+        .pipeline-node:hover {
+            border-color: var(--gold-500);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .pipeline-node .pn-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+        .pipeline-node .pn-title { font-weight: 600; font-size: 0.85rem; }
+        .pipeline-node .pn-sub { font-size: 0.75rem; color: var(--warm-gray); margin-top: 0.2rem; }
+
+        .pipeline-arrow {
+            font-size: 1.4rem;
+            color: var(--gold-500);
+            font-weight: 700;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           RESULTS TABLE
+           ═══════════════════════════════════════════════════ */
+        .table-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .table-btn {
+            padding: 0.5rem 1.2rem;
+            border-radius: 99px;
+            font-family: var(--font-body);
+            font-size: 0.82rem;
+            font-weight: 500;
+            border: 1.5px solid var(--warm-gray-light);
+            background: white;
+            color: var(--charcoal-mid);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .table-btn:hover { border-color: var(--gold-400); }
+        .table-btn.active {
+            background: var(--gold-400);
+            border-color: var(--gold-400);
+            color: var(--charcoal);
+        }
+
+        .results-table-wrapper {
+            overflow-x: auto;
+            border-radius: var(--radius-lg);
+            background: white;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(26,24,20,0.05);
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        .results-table thead th {
+            background: var(--charcoal);
+            color: var(--gold-200);
+            padding: 1rem 1.2rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.78rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .results-table thead th:hover {
+            background: var(--charcoal-light);
+        }
+
+        .results-table thead th .sort-icon {
+            margin-left: 0.3rem;
+            opacity: 0.4;
+            font-size: 0.7rem;
+        }
+
+        .results-table thead th.sort-asc .sort-icon,
+        .results-table thead th.sort-desc .sort-icon {
+            opacity: 1;
+            color: var(--gold-400);
+        }
+
+        .results-table tbody tr {
+            transition: background 0.2s;
+        }
+
+        .results-table tbody tr:hover {
+            background: var(--gold-50);
+        }
+
+        .results-table tbody td {
+            padding: 0.8rem 1.2rem;
+            border-bottom: 1px solid rgba(26,24,20,0.04);
+        }
+
+        .results-table .best-cell {
+            font-weight: 700;
+            color: var(--gold-700);
+            background: var(--gold-100);
+        }
+
+        .results-table .metric-bar {
+            display: inline-block;
+            height: 4px;
+            border-radius: 99px;
+            background: var(--gold-400);
+            margin-left: 0.6rem;
+            vertical-align: middle;
+            transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* ═══════════════════════════════════════════════════
+           VISUALIZATION GALLERY
+           ═══════════════════════════════════════════════════ */
+        .viz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .viz-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            border: 1px solid rgba(26,24,20,0.06);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: pointer;
+        }
+
+        .viz-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .viz-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.5s;
+        }
+
+        .viz-card:hover img {
+            transform: scale(1.02);
+        }
+
+        .viz-card-info {
+            padding: 1.2rem 1.5rem;
+        }
+
+        .viz-card-info h4 {
+            font-family: var(--font-display);
+            font-size: 1.05rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .viz-card-info p {
+            font-size: 0.82rem;
+            color: var(--warm-gray);
+            line-height: 1.5;
+        }
+
+        .viz-full {
+            grid-column: 1 / -1;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           LIGHTBOX
+           ═══════════════════════════════════════════════════ */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(26, 24, 20, 0.92);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s;
+            padding: 2rem;
+        }
+
+        .lightbox.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 85vh;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-xl);
+            transform: scale(0.9);
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .lightbox.active img { transform: scale(1); }
+
+        .lightbox-close {
+            position: absolute;
+            top: 1.5rem; right: 1.5rem;
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .lightbox-close:hover { background: rgba(255,255,255,0.2); }
+
+        .lightbox-caption {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--warm-gray-light);
+            font-size: 0.9rem;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           KEY FINDINGS SECTION
+           ═══════════════════════════════════════════════════ */
+        .findings-section {
+            background: linear-gradient(180deg, var(--gold-100), var(--warm-white));
+        }
+
+        .finding-item {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(26,24,20,0.06);
+            align-items: flex-start;
+        }
+
+        .finding-item:last-child { border-bottom: none; }
+
+        .finding-num {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            color: var(--gold-400);
+            line-height: 1;
+            min-width: 50px;
+        }
+
+        .finding-content h4 {
+            font-family: var(--font-display);
+            font-size: 1.15rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .finding-content p {
+            font-size: 0.92rem;
+            color: var(--charcoal-mid);
+            line-height: 1.7;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           TECH STACK
+           ═══════════════════════════════════════════════════ */
+        .tech-pills {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .tech-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid rgba(26,24,20,0.08);
+            border-radius: 99px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tech-pill:hover {
+            border-color: var(--gold-400);
+            background: var(--gold-50);
+            transform: translateY(-1px);
+        }
+
+        .tech-pill .tp-icon {
+            width: 18px; height: 18px;
+            border-radius: 4px;
+            background: var(--gold-200);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           FOOTER
+           ═══════════════════════════════════════════════════ */
+        .footer {
+            background: var(--charcoal);
+            color: var(--warm-gray);
+            padding: 3rem 2rem;
+        }
+
+        .footer-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .footer-logo {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            color: var(--gold-400);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: var(--warm-gray);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover { color: var(--gold-400); }
+
+        .footer-copy {
+            width: 100%;
+            text-align: center;
+            font-size: 0.78rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--charcoal-mid);
+        }
+
+        /* ═══════════════════════════════════════════════════
+           BACK TO TOP
+           ═══════════════════════════════════════════════════ */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem; right: 2rem;
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: var(--gold-400);
+            color: var(--charcoal);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .back-to-top:hover {
+            background: var(--gold-500);
+            transform: translateY(-2px);
+        }
+
+        /* ═══════════════════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════════════════ */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .nav-hamburger { display: flex; }
+
+            .nav-links.open {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 64px;
+                left: 0; right: 0;
+                background: var(--warm-white);
+                padding: 1.5rem 2rem;
+                box-shadow: var(--shadow-md);
+                gap: 1.2rem;
+            }
+
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .hero-meta { gap: 1rem; }
+            .pipeline { flex-direction: column; }
+            .pipeline-arrow { transform: rotate(90deg); }
+            .viz-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .stat-number { font-size: 2.2rem; }
+        }
+
+        /* ═══════════════════════════════════════════════════
+           PROGRESS BAR
+           ═══════════════════════════════════════════════════ */
+        .progress-bar {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold-400), var(--gold-600));
+            z-index: 10001;
+            transition: width 0.1s;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">Sports<span>vs</span>Politics</a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#about">About</a></li>
+                <li><a href="#data">Data</a></li>
+                <li><a href="#methods">Methods</a></li>
+                <li><a href="#results">Results</a></li>
+                <li><a href="#visualizations">Plots</a></li>
+                <li><a href="#findings">Findings</a></li>
+            </ul>
+            <button class="nav-hamburger" id="hamburger" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero" id="hero">
+        <div class="hero-bg-shapes">
+            <div class="circle c1"></div>
+            <div class="circle c2"></div>
+            <div class="circle c3"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                NLU Course — Assignment 1
+            </div>
+            <h1>Sports vs Politics<br><span class="highlight">Text Classification</span></h1>
+            <p class="hero-subtitle">
+                A systematic comparative study of classical machine learning techniques for binary document classification, evaluating five feature extraction strategies across five classifiers on a multi-source news corpus.
+            </p>
+            <div class="hero-meta">
+                <span class="hero-meta-item"><strong>Priyadip Sau</strong> · M25CSA023</span>
+                <span class="hero-meta-item">25 Experimental Configs</span>
+                <span class="hero-meta-item">Best Accuracy: <strong>91.46%</strong></span>
+            </div>
+            <div class="hero-actions">
+                <a href="https://github.com/priyadip/sports-politics-classifier" target="_blank" class="btn btn-primary">
+                    ⚡ View on GitHub
+                </a>
+                <a href="#results" class="btn btn-secondary">
+                    ↓ Explore Results
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Banner -->
+    <div class="stats-banner">
+        <div class="stats-grid">
+            <div class="stat-card reveal">
+                <div class="stat-number" data-target="6440" data-suffix="+">0</div>
+                <div class="stat-label">Documents</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-1">
+                <div class="stat-number" data-target="25">0</div>
+                <div class="stat-label">Configurations</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-2">
+                <div class="stat-number" data-target="91.46" data-suffix="%" data-decimal="true">0</div>
+                <div class="stat-label">Best Accuracy</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-3">
+                <div class="stat-number" data-target="5" >0</div>
+                <div class="stat-label">Classifiers</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section class="section" id="about">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <span class="section-tag">Overview</span>
+                <h2 class="section-title">What This Project Does</h2>
+                <p class="section-desc">
+                    We tackle the binary classification problem of distinguishing sports articles from political coverage—not because the task is intrinsically hard, but because the simplicity of the label space lets us rigorously isolate how different feature representations interact with different classifier architectures. The pipeline spans everything from multi-source data ingestion and NLTK-driven preprocessing to systematic evaluation across 25 experimental configurations.
+                </p>
+            </div>
+            <div class="method-grid">
+                <div class="method-card reveal">
+                    <div class="method-icon">📰</div>
+                    <h3>Multi-Source Corpus</h3>
+                    <p>BBC News Archive, template-driven synthetic generation, and real-time Indian news via NewsAPI—three data streams blended to ensure diversity in writing style, temporal coverage, and geographic focus.</p>
+                </div>
+                <div class="method-card reveal reveal-delay-1">
+                    <div class="method-icon">🔬</div>
+                    <h3>5 × 5 Evaluation Grid</h3>
+                    <p>Five feature extraction methods (BoW and TF-IDF with varying n-gram ranges) crossed with five classifiers (NB, LR, SVM, RF, GB), yielding 25 configurations evaluated on six metrics each.</p>
+                </div>
+                <div class="method-card reveal reveal-delay-2">
+                    <div class="method-icon">📊</div>
+                    <h3>Rich Visualization Suite</h3>
+                    <p>Publication-quality figures—heatmaps, radar charts, confusion matrices, cross-validation error bars—generated automatically by a dedicated ExperimentVisualizer class at 300 DPI.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Data Section -->
+    <section class="section findings-section" id="data">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <span class="section-tag">Dataset</span>
+                <h2 class="section-title">Data Collection Pipeline</h2>
+                <p class="section-desc">
+                    The corpus assembles real editorial content, controlled synthetic data, and live API-fetched news articles into a single cohesive dataset for classification.
+                </p>
+            </div>
+            <div class="pipeline reveal">
+                <div class="pipeline-node">
+                    <div class="pn-icon">📁</div>
+                    <div class="pn-title">BBC News Archive</div>
+                    <div class="pn-sub">Kaggle · 2004–2005 · sport &amp; politics</div>
+                </div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-node">
+                    <div class="pn-icon">🤖</div>
+                    <div class="pn-title">Synthetic Generator</div>
+                    <div class="pn-sub">1,000 template-based articles</div>
+                </div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-node">
+                    <div class="pn-icon">🌐</div>
+                    <div class="pn-title">NewsAPI (India)</div>
+                    <div class="pn-sub">Cricket, football, parliament, elections</div>
+                </div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-node" style="border-color: var(--gold-500); background: var(--gold-50);">
+                    <div class="pn-icon">✅</div>
+                    <div class="pn-title">Final Dataset</div>
+                    <div class="pn-sub">~6,440 documents · 2 classes</div>
+                </div>
+            </div>
+
+            <div class="method-grid" style="margin-top: 3rem;">
+                <div class="method-card reveal">
+                    <div class="method-icon">🧹</div>
+                    <h3>Preprocessing</h3>
+                    <p>Lowercasing, URL/email removal, punctuation stripping, NLTK tokenization, English stopword removal, and WordNet lemmatization—applied uniformly to every document before vectorization.</p>
+                </div>
+                <div class="method-card reveal reveal-delay-1">
+                    <div class="method-icon">📐</div>
+                    <h3>Feature Extraction</h3>
+                    <p>CountVectorizer (BoW) and TfidfVectorizer with sublinear TF scaling, max_features=5000, min_df=2, max_df=0.95. Evaluated at unigram, bigram, and trigram configurations.</p>
+                </div>
+                <div class="method-card reveal reveal-delay-2">
+                    <div class="method-icon">⚖️</div>
+                    <h3>Train-Test Split</h3>
+                    <p>80/20 stratified split (random_state=42) preserving class proportions. 5-fold stratified cross-validation on the training set to assess generalization stability.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Methods Section -->
+    <section class="section" id="methods">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <span class="section-tag">Classifiers</span>
+                <h2 class="section-title">Machine Learning Techniques</h2>
+                <p class="section-desc">
+                    Five classifiers spanning probabilistic, linear, and ensemble paradigms—each evaluated across all five feature representations.
+                </p>
+            </div>
+            <div class="method-grid">
+                <div class="method-card reveal">
+                    <div class="method-icon">🎲</div>
+                    <h3>Multinomial Naive Bayes</h3>
+                    <p>Probabilistic baseline assuming feature independence. Blatantly violates linguistic reality, yet rarely harms classification performance on text. Fast to train, interpretable.</p>
+                </div>
+                <div class="method-card reveal reveal-delay-1">
+                    <div class="method-icon">📈</div>
+                    <h3>Logistic Regression</h3>
+                    <p>L2-regularized linear model (max_iter=1000). Outputs calibrated probabilities via the sigmoid function. A formidable competitor in high-dimensional sparse settings.</p>
+                </div>
+                <div class="method-card reveal reveal-delay-2">
+                    <div class="method-icon">🔲</div>
+                    <h3>Support Vector Machine</h3>
+                    <p>Linear-kernel SVM maximizing the margin between class boundaries. Probability estimates enabled via Platt scaling. Long track record of excellence on text classification.</p>
+                </div>
+                <div class="method-card reveal reveal-delay-3">
+                    <div class="method-icon">🌲</div>
+                    <h3>Random Forest</h3>
+                    <p>Ensemble of 100 bootstrapped decision trees. Captures non-linear interactions and provides feature importance, but tends to underperform linear models on sparse text features.</p>
+                </div>
+                <div class="method-card reveal reveal-delay-4">
+                    <div class="method-icon">🚀</div>
+                    <h3>Gradient Boosting</h3>
+                    <p>Sequential ensemble of 100 boosted trees correcting residual errors. Dominates tabular benchmarks, but struggles with the extreme sparsity of text vectorizations.</p>
+                </div>
+            </div>
+
+            <div class="reveal" style="margin-top: 3rem;">
+                <h3 style="font-family: var(--font-display); margin-bottom: 1rem;">Tech Stack</h3>
+                <div class="tech-pills">
+                    <span class="tech-pill"><span class="tp-icon">🐍</span> Python 3.8+</span>
+                    <span class="tech-pill"><span class="tp-icon">🔢</span> NumPy</span>
+                    <span class="tech-pill"><span class="tp-icon">🐼</span> Pandas</span>
+                    <span class="tech-pill"><span class="tp-icon">⚙️</span> scikit-learn</span>
+                    <span class="tech-pill"><span class="tp-icon">📝</span> NLTK</span>
+                    <span class="tech-pill"><span class="tp-icon">📊</span> Matplotlib</span>
+                    <span class="tech-pill"><span class="tp-icon">🎨</span> Seaborn</span>
+                    <span class="tech-pill"><span class="tp-icon">🌐</span> NewsAPI</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="section findings-section" id="results">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <span class="section-tag">Experiments</span>
+                <h2 class="section-title">Experimental Results</h2>
+                <p class="section-desc">
+                    Complete metrics for all 25 configurations. Click column headers to sort. Toggle between metrics using the buttons below.
+                </p>
+            </div>
+
+            <div class="table-controls reveal">
+                <button class="table-btn active" data-metric="accuracy">Accuracy</button>
+                <button class="table-btn" data-metric="f1_score">F1 Score</button>
+                <button class="table-btn" data-metric="precision">Precision</button>
+                <button class="table-btn" data-metric="recall">Recall</button>
+                <button class="table-btn" data-metric="cv_mean">CV Mean</button>
+                <button class="table-btn" data-metric="roc_auc">ROC-AUC</button>
+            </div>
+
+            <div class="results-table-wrapper reveal">
+                <table class="results-table" id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th data-col="rank"># <span class="sort-icon">↕</span></th>
+                            <th data-col="feature_method">Feature Method <span class="sort-icon">↕</span></th>
+                            <th data-col="classifier">Classifier <span class="sort-icon">↕</span></th>
+                            <th data-col="accuracy">Accuracy <span class="sort-icon">↕</span></th>
+                            <th data-col="f1_score">F1 Score <span class="sort-icon">↕</span></th>
+                            <th data-col="precision">Precision <span class="sort-icon">↕</span></th>
+                            <th data-col="recall">Recall <span class="sort-icon">↕</span></th>
+                            <th data-col="cv_mean">CV Mean <span class="sort-icon">↕</span></th>
+                            <th data-col="roc_auc">ROC-AUC <span class="sort-icon">↕</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualizations Section -->
+    <section class="section" id="visualizations">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <span class="section-tag">Visualizations</span>
+                <h2 class="section-title">Experimental Plots</h2>
+                <p class="section-desc">
+                    Publication-quality figures generated at 300 DPI. Click any image to expand.
+                </p>
+            </div>
+
+            <div class="viz-grid">
+                <div class="viz-card viz-full reveal" onclick="openLightbox(this)">
+                    <img src="results/accuracy_comparison.png" alt="Accuracy Comparison" loading="lazy">
+                    <div class="viz-card-info">
+                        <h4>Accuracy Comparison</h4>
+                        <p>Grouped bar chart of classification accuracy across all feature methods and classifiers, with values annotated on each bar.</p>
+                    </div>
+                </div>
+
+                <div class="viz-card reveal" onclick="openLightbox(this)">
+                    <img src="results/f1_comparison.png" alt="F1 Score Comparison" loading="lazy">
+                    <div class="viz-card-info">
+                        <h4>F1-Score Comparison</h4>
+                        <p>Weighted F1-score across all 25 experimental configurations.</p>
+                    </div>
+                </div>
+
+                <div class="viz-card reveal reveal-delay-1" onclick="openLightbox(this)">
+                    <img src="results/cv_scores.png" alt="Cross-Validation Scores" loading="lazy">
+                    <div class="viz-card-info">
+                        <h4>Cross-Validation Scores</h4>
+                        <p>5-fold CV performance with standard deviation error bars showing stability.</p>
+                    </div>
+                </div>
+
+                <div class="viz-card viz-full reveal" onclick="openLightbox(this)">
+                    <img src="results/confusion_matrices.png" alt="Confusion Matrices" loading="lazy">
+                    <div class="viz-card-info">
+                        <h4>Confusion Matrices</h4>
+                        <p>Best classifier per feature method. Note the asymmetry: sports articles misclassified as politics more often than the reverse.</p>
+                    </div>
+                </div>
+
+                <div class="viz-card reveal" onclick="openLightbox(this)">
+                    <img src="results/heatmap_accuracy.png" alt="Accuracy Heatmap" loading="lazy">
+                    <div class="viz-card-info">
+                        <h4>Accuracy Heatmap</h4>
+                        <p>Feature methods × classifiers grid. Darker red = higher accuracy.</p>
+                    </div>
+                </div>
+
+                <div class="viz-card reveal reveal-delay-1" onclick="openLightbox(this)">
+                    <img src="results/heatmap_f1_score.png" alt="F1 Heatmap" loading="lazy">
+                    <div class="viz-card-info">
+                        <h4>F1-Score Heatmap</h4>
+                        <p>Weighted F1 heatmap mirroring the accuracy pattern closely.</p>
+                    </div>
+                </div>
+
+                <div class="viz-card reveal" onclick="openLightbox(this)">
+                    <img src="results/heatmap_cv_mean.png" alt="CV Mean Heatmap" loading="lazy">
+                    <div class="viz-card-info">
+                        <h4>CV Mean Heatmap</h4>
+                        <p>Cross-validation mean accuracy. TF-IDF features dominate the warm end.</p>
+                    </div>
+                </div>
+
+                <div class="viz-card reveal reveal-delay-1" onclick="openLightbox(this)">
+                    <img src="results/comparison_plots.png" alt="Multi-Panel Comparison" loading="lazy">
+                    <div class="viz-card-info">
+                        <h4>Multi-Panel Summary</h4>
+                        <p>Four-panel overview: accuracy, F1, CV scores, and heatmap in one figure.</p>
+                    </div>
+                </div>
+
+                <div class="viz-card reveal" onclick="openLightbox(this)">
+                    <img src="results/radar_svm.png" alt="Radar Chart: SVM" loading="lazy">
+                    <div class="viz-card-info">
+                        <h4>Radar Chart — SVM</h4>
+                        <p>Multi-metric profile. TF-IDF features push the polygon outward on all axes.</p>
+                    </div>
+                </div>
+
+                <div class="viz-card reveal reveal-delay-1" onclick="openLightbox(this)">
+                    <img src="results/radar_logistic_regression.png" alt="Radar Chart: Logistic Regression" loading="lazy">
+                    <div class="viz-card-info">
+                        <h4>Radar Chart — Logistic Regression</h4>
+                        <p>BoW (Bigram) dominates here, unlike SVM where TF-IDF leads.</p>
+                    </div>
+                </div>
+
+                <div class="viz-card reveal" onclick="openLightbox(this)">
+                    <img src="results/radar_naive_bayes.png" alt="Radar Chart: Naive Bayes" loading="lazy">
+                    <div class="viz-card-info">
+                        <h4>Radar Chart — Naive Bayes</h4>
+                        <p>Most compact polygon among the three, reflecting lower overall scores.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Findings -->
+    <section class="section findings-section" id="findings">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <span class="section-tag">Analysis</span>
+                <h2 class="section-title">Key Findings</h2>
+            </div>
+
+            <div class="finding-item reveal">
+                <div class="finding-num">01</div>
+                <div class="finding-content">
+                    <h4>TF-IDF Consistently Outperforms Bag of Words</h4>
+                    <p>Across every classifier, TF-IDF representations yielded higher accuracy than raw count vectors. The SVM saw the most dramatic gain: 89.91% with BoW (Bigram) jumped to 91.46% with TF-IDF (Unigram)—a 1.55-point lift from weighting alone. The inverse document frequency term down-weights ubiquitous tokens and amplifies rare but discriminative ones.</p>
+                </div>
+            </div>
+
+            <div class="finding-item reveal reveal-delay-1">
+                <div class="finding-num">02</div>
+                <div class="finding-content">
+                    <h4>Linear Models Dominate</h4>
+                    <p>SVM and Logistic Regression consistently claimed the top positions regardless of feature method. This is expected: text feature spaces are high-dimensional (5,000 features), sparse, and approximately linearly separable for well-separated topic categories. The ensemble methods—built for low-dimensional dense features—could not leverage their non-linear capacity effectively.</p>
+                </div>
+            </div>
+
+            <div class="finding-item reveal reveal-delay-2">
+                <div class="finding-num">03</div>
+                <div class="finding-content">
+                    <h4>N-gram Expansion Hits Diminishing Returns</h4>
+                    <p>For SVM, TF-IDF (Unigram) actually outperformed both bigram and trigram variants. The max_features=5000 cap forces a trade-off: as the n-gram range grows, the 5,000 slots are spread across unigrams, bigrams, and trigrams rather than concentrating on the strongest unigrams. Bigger n-gram ranges need proportionally larger feature budgets.</p>
+                </div>
+            </div>
+
+            <div class="finding-item reveal reveal-delay-3">
+                <div class="finding-num">04</div>
+                <div class="finding-content">
+                    <h4>Gradient Boosting Struggles on Text</h4>
+                    <p>Despite dominating tabular data benchmarks, Gradient Boosting finished last in every feature configuration, trailing the leader by 2–4 percentage points. The greedy, sequential tree construction struggles with the extreme sparsity of text vectorizations—most splits involve features that are zero for the vast majority of documents.</p>
+                </div>
+            </div>
+
+            <div class="finding-item reveal reveal-delay-4">
+                <div class="finding-num">05</div>
+                <div class="finding-content">
+                    <h4>Confusion Matrix Asymmetry</h4>
+                    <p>All models misclassify more sports articles as politics than the reverse. Under the best configuration, 67/571 sport articles were mislabeled (11.7% error) versus 43/717 politics articles (6.0%). Political coverage occasionally discusses sporting events in a policy context (stadium funding, doping regulation), creating boundary cases that blur the decision surface.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-logo">Sports<span style="color:var(--gold-500)">vs</span>Politics</div>
+            <ul class="footer-links">
+                <li><a href="https://github.com/priyadip/sports-politics-classifier" target="_blank">GitHub Repository</a></li>
+                <li><a href="#results">Results</a></li>
+                <li><a href="#visualizations">Visualizations</a></li>
+            </ul>
+            <div class="footer-copy">
+                © 2026 Priyadip Sau (M25CSA023) · NLU Assignment 1 · Semester 2
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0})">↑</button>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+        <img id="lightboxImg" src="" alt="">
+        <div class="lightbox-caption" id="lightboxCaption"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         JAVASCRIPT
+         ═══════════════════════════════════════════════════ -->
+    <script>
+    // ── Experiment Data (from experiment_results.csv) ──
+    const DATA = [
+        {feature_method:"BoW (Unigram)",classifier:"naive_bayes",accuracy:0.8905,precision:0.8938,recall:0.8905,f1_score:0.8895,cv_mean:0.8899,cv_std:0.0087,roc_auc:0.9603},
+        {feature_method:"BoW (Unigram)",classifier:"logistic_regression",accuracy:0.9099,precision:0.9099,recall:0.9099,f1_score:0.9099,cv_mean:0.8887,cv_std:0.0020,roc_auc:0.9690},
+        {feature_method:"BoW (Unigram)",classifier:"svm",accuracy:0.9030,precision:0.9030,recall:0.9030,f1_score:0.9028,cv_mean:0.8840,cv_std:0.0056,roc_auc:0.9576},
+        {feature_method:"BoW (Unigram)",classifier:"random_forest",accuracy:0.9068,precision:0.9091,recall:0.9068,f1_score:0.9062,cv_mean:0.8918,cv_std:0.0064,roc_auc:0.9628},
+        {feature_method:"BoW (Unigram)",classifier:"gradient_boosting",accuracy:0.8789,precision:0.8861,recall:0.8789,f1_score:0.8771,cv_mean:0.8747,cv_std:0.0057,roc_auc:0.9515},
+        {feature_method:"BoW (Bigram)",classifier:"naive_bayes",accuracy:0.8944,precision:0.8972,recall:0.8944,f1_score:0.8935,cv_mean:0.8906,cv_std:0.0062,roc_auc:0.9583},
+        {feature_method:"BoW (Bigram)",classifier:"logistic_regression",accuracy:0.9123,precision:0.9123,recall:0.9123,f1_score:0.9121,cv_mean:0.8885,cv_std:0.0042,roc_auc:0.9689},
+        {feature_method:"BoW (Bigram)",classifier:"svm",accuracy:0.8991,precision:0.8990,recall:0.8991,f1_score:0.8990,cv_mean:0.8801,cv_std:0.0035,roc_auc:0.9570},
+        {feature_method:"BoW (Bigram)",classifier:"random_forest",accuracy:0.9061,precision:0.9084,recall:0.9061,f1_score:0.9054,cv_mean:0.8926,cv_std:0.0052,roc_auc:0.9637},
+        {feature_method:"BoW (Bigram)",classifier:"gradient_boosting",accuracy:0.8711,precision:0.8787,recall:0.8711,f1_score:0.8691,cv_mean:0.8772,cv_std:0.0041,roc_auc:0.9531},
+        {feature_method:"TF-IDF (Unigram)",classifier:"naive_bayes",accuracy:0.8898,precision:0.8954,recall:0.8898,f1_score:0.8884,cv_mean:0.8854,cv_std:0.0076,roc_auc:0.9643},
+        {feature_method:"TF-IDF (Unigram)",classifier:"logistic_regression",accuracy:0.9061,precision:0.9082,recall:0.9061,f1_score:0.9054,cv_mean:0.8988,cv_std:0.0057,roc_auc:0.9708},
+        {feature_method:"TF-IDF (Unigram)",classifier:"svm",accuracy:0.9146,precision:0.9148,recall:0.9146,f1_score:0.9144,cv_mean:0.8992,cv_std:0.0033,roc_auc:0.9705},
+        {feature_method:"TF-IDF (Unigram)",classifier:"random_forest",accuracy:0.9092,precision:0.9108,recall:0.9092,f1_score:0.9086,cv_mean:0.8906,cv_std:0.0070,roc_auc:0.9642},
+        {feature_method:"TF-IDF (Unigram)",classifier:"gradient_boosting",accuracy:0.8804,precision:0.8867,recall:0.8804,f1_score:0.8788,cv_mean:0.8805,cv_std:0.0070,roc_auc:0.9542},
+        {feature_method:"TF-IDF (Bigram)",classifier:"naive_bayes",accuracy:0.8913,precision:0.8961,recall:0.8913,f1_score:0.8901,cv_mean:0.8883,cv_std:0.0054,roc_auc:0.9622},
+        {feature_method:"TF-IDF (Bigram)",classifier:"logistic_regression",accuracy:0.9092,precision:0.9112,recall:0.9092,f1_score:0.9086,cv_mean:0.9000,cv_std:0.0045,roc_auc:0.9711},
+        {feature_method:"TF-IDF (Bigram)",classifier:"svm",accuracy:0.9123,precision:0.9124,recall:0.9123,f1_score:0.9121,cv_mean:0.9005,cv_std:0.0043,roc_auc:0.9704},
+        {feature_method:"TF-IDF (Bigram)",classifier:"random_forest",accuracy:0.9068,precision:0.9087,recall:0.9068,f1_score:0.9062,cv_mean:0.8965,cv_std:0.0053,roc_auc:0.9644},
+        {feature_method:"TF-IDF (Bigram)",classifier:"gradient_boosting",accuracy:0.8851,precision:0.8915,recall:0.8851,f1_score:0.8835,cv_mean:0.8805,cv_std:0.0064,roc_auc:0.9526},
+        {feature_method:"TF-IDF (Trigram)",classifier:"naive_bayes",accuracy:0.8921,precision:0.8967,recall:0.8921,f1_score:0.8909,cv_mean:0.8879,cv_std:0.0048,roc_auc:0.9612},
+        {feature_method:"TF-IDF (Trigram)",classifier:"logistic_regression",accuracy:0.9068,precision:0.9089,recall:0.9068,f1_score:0.9062,cv_mean:0.9002,cv_std:0.0052,roc_auc:0.9709},
+        {feature_method:"TF-IDF (Trigram)",classifier:"svm",accuracy:0.9115,precision:0.9118,recall:0.9115,f1_score:0.9112,cv_mean:0.9000,cv_std:0.0021,roc_auc:0.9704},
+        {feature_method:"TF-IDF (Trigram)",classifier:"random_forest",accuracy:0.9107,precision:0.9119,recall:0.9107,f1_score:0.9103,cv_mean:0.8932,cv_std:0.0096,roc_auc:0.9656},
+        {feature_method:"TF-IDF (Trigram)",classifier:"gradient_boosting",accuracy:0.8851,precision:0.8919,recall:0.8851,f1_score:0.8835,cv_mean:0.8801,cv_std:0.0052,roc_auc:0.9538}
+    ];
+
+    // ── Sort & Render Table ──
+    let currentSort = { col: 'accuracy', dir: 'desc' };
+    let highlightMetric = 'accuracy';
+
+    const CLASSIFIER_LABELS = {
+        naive_bayes: 'Naive Bayes',
+        logistic_regression: 'Logistic Regression',
+        svm: 'SVM',
+        random_forest: 'Random Forest',
+        gradient_boosting: 'Gradient Boosting'
+    };
+
+    function renderTable() {
+        const sorted = [...DATA].sort((a, b) => {
+            const va = a[currentSort.col], vb = b[currentSort.col];
+            if (typeof va === 'string') return currentSort.dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+            return currentSort.dir === 'asc' ? va - vb : vb - va;
+        });
+
+        const maxVal = Math.max(...DATA.map(d => d[highlightMetric]));
+        const minVal = Math.min(...DATA.map(d => d[highlightMetric]));
+        const bestVal = maxVal;
+
+        const tbody = document.getElementById('resultsBody');
+        tbody.innerHTML = sorted.map((row, i) => {
+            const isBest = row[highlightMetric] === bestVal;
+            const barWidth = ((row[highlightMetric] - minVal) / (maxVal - minVal)) * 60;
+            return `<tr>
+                <td style="font-weight:600;color:var(--warm-gray);font-size:0.8rem;">${i + 1}</td>
+                <td><span style="font-family:var(--font-mono);font-size:0.82rem;">${row.feature_method}</span></td>
+                <td>${CLASSIFIER_LABELS[row.classifier] || row.classifier}</td>
+                <td class="${highlightMetric==='accuracy' && isBest ? 'best-cell' : ''}">${row.accuracy.toFixed(4)} ${highlightMetric==='accuracy' ? `<span class="metric-bar" style="width:${barWidth}px"></span>` : ''}</td>
+                <td class="${highlightMetric==='f1_score' && isBest ? 'best-cell' : ''}">${row.f1_score.toFixed(4)} ${highlightMetric==='f1_score' ? `<span class="metric-bar" style="width:${barWidth}px"></span>` : ''}</td>
+                <td class="${highlightMetric==='precision' && isBest ? 'best-cell' : ''}">${row.precision.toFixed(4)}</td>
+                <td class="${highlightMetric==='recall' && isBest ? 'best-cell' : ''}">${row.recall.toFixed(4)}</td>
+                <td class="${highlightMetric==='cv_mean' && isBest ? 'best-cell' : ''}">${row.cv_mean.toFixed(4)} <span style="color:var(--warm-gray);font-size:0.75rem;">±${row.cv_std.toFixed(4)}</span></td>
+                <td class="${highlightMetric==='roc_auc' && isBest ? 'best-cell' : ''}">${row.roc_auc.toFixed(4)}</td>
+            </tr>`;
+        }).join('');
+
+        // Update header sort indicators
+        document.querySelectorAll('.results-table thead th').forEach(th => {
+            th.classList.remove('sort-asc', 'sort-desc');
+            if (th.dataset.col === currentSort.col) {
+                th.classList.add(currentSort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+            }
+        });
+    }
+
+    // Table header click to sort
+    document.querySelectorAll('.results-table thead th').forEach(th => {
+        th.addEventListener('click', () => {
+            const col = th.dataset.col;
+            if (!col) return;
+            if (currentSort.col === col) {
+                currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort = { col, dir: 'desc' };
+            }
+            renderTable();
+        });
+    });
+
+    // Metric toggle buttons
+    document.querySelectorAll('.table-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            highlightMetric = btn.dataset.metric;
+            currentSort = { col: highlightMetric, dir: 'desc' };
+            renderTable();
+        });
+    });
+
+    // Initial render
+    renderTable();
+
+    // ── Scroll Reveal ──
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // ── Navbar Scroll Effect ──
+    const nav = document.getElementById('nav');
+    const backToTop = document.getElementById('backToTop');
+    const progressBar = document.getElementById('progressBar');
+
+    window.addEventListener('scroll', () => {
+        const scrollY = window.scrollY;
+        nav.classList.toggle('scrolled', scrollY > 60);
+        backToTop.classList.toggle('visible', scrollY > 600);
+
+        // Progress bar
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollY / docHeight) * 100;
+        progressBar.style.width = progress + '%';
+    });
+
+    // ── Hamburger Menu ──
+    document.getElementById('hamburger').addEventListener('click', () => {
+        document.getElementById('navLinks').classList.toggle('open');
+    });
+
+    // Close menu on link click
+    document.querySelectorAll('.nav-links a').forEach(a => {
+        a.addEventListener('click', () => {
+            document.getElementById('navLinks').classList.remove('open');
+        });
+    });
+
+    // ── Animated Counters ──
+    const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const el = entry.target;
+                const target = parseFloat(el.dataset.target);
+                const suffix = el.dataset.suffix || '';
+                const isDecimal = el.dataset.decimal === 'true';
+                const duration = 1800;
+                const start = performance.now();
+
+                function tick(now) {
+                    const elapsed = now - start;
+                    const progress = Math.min(elapsed / duration, 1);
+                    // Ease out cubic
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    const current = eased * target;
+
+                    el.textContent = (isDecimal ? current.toFixed(2) : Math.floor(current)) + suffix;
+
+                    if (progress < 1) requestAnimationFrame(tick);
+                }
+
+                requestAnimationFrame(tick);
+                counterObserver.unobserve(el);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.stat-number[data-target]').forEach(el => counterObserver.observe(el));
+
+    // ── Lightbox ──
+    function openLightbox(card) {
+        const img = card.querySelector('img');
+        const caption = card.querySelector('h4')?.textContent || '';
+        document.getElementById('lightboxImg').src = img.src;
+        document.getElementById('lightboxCaption').textContent = caption;
+        document.getElementById('lightbox').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeLightbox();
+    });
+
+    // Prevent lightbox close when clicking on image
+    document.getElementById('lightboxImg').addEventListener('click', (e) => e.stopPropagation());
+
+    // ── Smooth Scroll for Nav Links ──
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    // ── Parallax on Hero Shapes ──
+    window.addEventListener('scroll', () => {
+        const scrollY = window.scrollY;
+        const shapes = document.querySelectorAll('.hero-bg-shapes .circle');
+        shapes.forEach((shape, i) => {
+            const speed = 0.15 + i * 0.05;
+            shape.style.transform = `translateY(${scrollY * speed}px)`;
+        });
+    });
+
+    </script>
+
+</body>
+</html>
