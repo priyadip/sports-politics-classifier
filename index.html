@@ -1004,6 +1004,342 @@
             z-index: 10001;
             transition: width 0.1s;
         }
+        /* ═══════════════════════════════════════════════════
+   LIVE DEMO SECTION — Add at the end of your <style> block
+   ═══════════════════════════════════════════════════ */
+
+.demo-container {
+    max-width: 720px;
+}
+
+/* ── Model Selector Cards ── */
+.demo-model-selector {
+    margin-bottom: 1.5rem;
+}
+
+.demo-model-cards {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.6rem;
+}
+
+.demo-model-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.9rem 0.5rem;
+    background: white;
+    border: 1.5px solid rgba(26,24,20,0.08);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    font-family: var(--font-body);
+}
+
+.demo-model-card:hover {
+    border-color: var(--gold-300);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.demo-model-card.active {
+    border-color: var(--gold-500);
+    background: var(--gold-50);
+    box-shadow: 0 0 0 3px rgba(245,184,0,0.15), var(--shadow-sm);
+}
+
+.dmc-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+.dmc-name {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    text-align: center;
+    line-height: 1.2;
+}
+
+.dmc-acc {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--warm-gray);
+}
+
+.demo-model-card.active .dmc-acc {
+    color: var(--gold-700);
+}
+
+.dmc-badge {
+    position: absolute;
+    top: -7px; right: -5px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--gold-400);
+    color: var(--charcoal);
+    padding: 1px 6px;
+    border-radius: 99px;
+    line-height: 1.6;
+}
+
+/* ── Text Input Area ── */
+.demo-input-area {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    border: 1.5px solid rgba(26,24,20,0.08);
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.demo-input-area:focus-within {
+    border-color: var(--gold-400);
+    box-shadow: 0 0 0 4px rgba(245,184,0,0.10), var(--shadow-md);
+}
+
+.demo-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--charcoal-mid);
+    margin-bottom: 0.6rem;
+}
+
+.demo-textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    resize: vertical;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--charcoal);
+    background: transparent;
+    min-height: 100px;
+}
+
+.demo-textarea::placeholder {
+    color: var(--warm-gray);
+    font-style: italic;
+}
+
+.demo-input-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid rgba(26,24,20,0.05);
+}
+
+.demo-char-count {
+    font-size: 0.78rem;
+    color: var(--warm-gray);
+    font-family: var(--font-mono);
+}
+
+.demo-btn {
+    min-width: 130px;
+    justify-content: center;
+    position: relative;
+}
+
+.demo-btn.loading .demo-btn-text { opacity: 0; }
+.demo-btn.loading .demo-btn-loader { opacity: 1; }
+
+.demo-btn-loader {
+    position: absolute;
+    width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,249,224,0.3);
+    border-top-color: var(--gold-200);
+    border-radius: 50%;
+    animation: demo-spin 0.7s linear infinite;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+@keyframes demo-spin { to { transform: rotate(360deg); } }
+
+/* ── Example Chips ── */
+.demo-examples {
+    margin-top: 1.2rem;
+}
+
+.demo-examples-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--warm-gray);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.demo-chips {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.demo-chip {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    color: var(--charcoal-mid);
+    background: white;
+    border: 1px solid var(--warm-gray-light);
+    border-radius: 99px;
+    padding: 0.35rem 0.9rem;
+    cursor: pointer;
+    transition: all 0.25s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 340px;
+}
+
+.demo-chip:hover {
+    border-color: var(--gold-400);
+    background: var(--gold-50);
+    color: var(--charcoal);
+}
+
+/* ── Result Card ── */
+.demo-result {
+    margin-top: 1.5rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    border: 1.5px solid var(--gold-300);
+    box-shadow: var(--shadow-md);
+    display: none;
+    animation: fadeUp 0.5s forwards;
+}
+
+.demo-result.show { display: block; }
+
+.demo-result-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.demo-result-icon {
+    font-size: 2.2rem;
+    line-height: 1;
+    width: 52px; height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gold-100);
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+
+.demo-result-label {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--charcoal);
+    line-height: 1.2;
+}
+
+.demo-result-confidence {
+    font-size: 0.88rem;
+    color: var(--warm-gray);
+    font-weight: 500;
+    margin-top: 0.15rem;
+}
+
+.demo-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.demo-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.demo-bar-label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    min-width: 95px;
+    color: var(--charcoal-mid);
+}
+
+.demo-bar-track {
+    flex: 1;
+    height: 10px;
+    background: var(--gold-100);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.demo-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.demo-bar-politics { background: linear-gradient(90deg, var(--accent-blue), #6A9CEB); }
+.demo-bar-sports { background: linear-gradient(90deg, var(--accent-teal), #45C4B5); }
+
+.demo-bar-pct {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 500;
+    min-width: 52px;
+    text-align: right;
+    color: var(--charcoal);
+}
+
+.demo-model-tag {
+    margin-top: 1rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid rgba(26,24,20,0.05);
+    font-size: 0.75rem;
+    color: var(--warm-gray);
+    font-family: var(--font-mono);
+    text-align: center;
+}
+
+/* ── Error State ── */
+.demo-error {
+    margin-top: 1rem;
+    background: #FFF5F5;
+    border: 1px solid #FECACA;
+    border-radius: var(--radius-md);
+    padding: 0.8rem 1.2rem;
+    font-size: 0.85rem;
+    color: var(--accent-red);
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.demo-error.show { display: flex; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .demo-model-cards {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .demo-chip { max-width: 260px; }
+}
+
+@media (max-width: 480px) {
+    .demo-model-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
     </style>
 </head>
 <body>
@@ -1022,6 +1358,7 @@
                 <li><a href="#results">Results</a></li>
                 <li><a href="#visualizations">Plots</a></li>
                 <li><a href="#findings">Findings</a></li>
+                <li><a href="#demo">Demo</a></li>
             </ul>
             <button class="nav-hamburger" id="hamburger" aria-label="Toggle menu">
                 <span></span><span></span><span></span>
@@ -1417,7 +1754,122 @@
             </div>
         </div>
     </section>
+    <!-- ═══════════════════════════════════════════════════════════
+     LIVE DEMO SECTION — Insert this BETWEEN #findings and <footer>
+     Also add <li><a href="#demo">Demo</a></li> to your nav links
+     ═══════════════════════════════════════════════════════════ -->
 
+    <!-- Live Demo -->
+    <section class="section" id="demo">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <span class="section-tag">Live Demo</span>
+                <h2 class="section-title">Try the Classifier</h2>
+                <p class="section-desc">
+                    Type any news headline or article excerpt, pick a model, and see the prediction in real time — powered by Hugging Face Spaces.
+                </p>
+            </div>
+
+            <div class="demo-container reveal">
+                <!-- Model selector -->
+                <div class="demo-model-selector">
+                    <label class="demo-label">Choose a classifier</label>
+                    <div class="demo-model-cards" id="modelCards">
+                        <button class="demo-model-card active" data-model="SVM (Best — 91.46%)" onclick="selectModel(this)">
+                            <span class="dmc-icon">🔲</span>
+                            <span class="dmc-name">SVM</span>
+                            <span class="dmc-acc">91.46%</span>
+                            <span class="dmc-badge">Best</span>
+                        </button>
+                        <button class="demo-model-card" data-model="Logistic Regression (91.23%)" onclick="selectModel(this)">
+                            <span class="dmc-icon">📈</span>
+                            <span class="dmc-name">Logistic Regression</span>
+                            <span class="dmc-acc">91.23%</span>
+                        </button>
+                        <button class="demo-model-card" data-model="Random Forest (91.07%)" onclick="selectModel(this)">
+                            <span class="dmc-icon">🌲</span>
+                            <span class="dmc-name">Random Forest</span>
+                            <span class="dmc-acc">91.07%</span>
+                        </button>
+                        <button class="demo-model-card" data-model="Naive Bayes (89.21%)" onclick="selectModel(this)">
+                            <span class="dmc-icon">🎲</span>
+                            <span class="dmc-name">Naive Bayes</span>
+                            <span class="dmc-acc">89.21%</span>
+                        </button>
+                        <button class="demo-model-card" data-model="Gradient Boosting (88.51%)" onclick="selectModel(this)">
+                            <span class="dmc-icon">🚀</span>
+                            <span class="dmc-name">Gradient Boosting</span>
+                            <span class="dmc-acc">88.51%</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Text input -->
+                <div class="demo-input-area">
+                    <label class="demo-label" for="demoInput">Enter text to classify</label>
+                    <textarea
+                        id="demoInput"
+                        class="demo-textarea"
+                        rows="4"
+                        placeholder="e.g. &quot;The striker scored a hat-trick in the Champions League final&quot;"
+                        maxlength="5000"
+                    ></textarea>
+                    <div class="demo-input-footer">
+                        <span class="demo-char-count" id="charCount">0 / 5,000</span>
+                        <button class="btn btn-primary demo-btn" id="classifyBtn" onclick="classifyText()">
+                            <span class="demo-btn-text">Classify</span>
+                            <span class="demo-btn-loader" id="btnLoader"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Example chips -->
+                <div class="demo-examples">
+                    <span class="demo-examples-label">Try an example:</span>
+                    <div class="demo-chips">
+                        <button class="demo-chip" onclick="fillExample(this)">India won the cricket world cup after a thrilling final match</button>
+                        <button class="demo-chip" onclick="fillExample(this)">Parliament passed the new education reform bill after heated debate</button>
+                        <button class="demo-chip" onclick="fillExample(this)">LeBron James broke the all-time scoring record in the NBA</button>
+                        <button class="demo-chip" onclick="fillExample(this)">The prime minister announced new economic sanctions</button>
+                    </div>
+                </div>
+
+                <!-- Results card (hidden until prediction) -->
+                <div class="demo-result" id="demoResult">
+                    <div class="demo-result-header">
+                        <span class="demo-result-icon" id="resultIcon">🏛️</span>
+                        <div>
+                            <div class="demo-result-label" id="resultLabel">Politics</div>
+                            <div class="demo-result-confidence" id="resultConfidence">98.2% confidence</div>
+                        </div>
+                    </div>
+                    <div class="demo-bars">
+                        <div class="demo-bar-row">
+                            <span class="demo-bar-label">Politics 🏛️</span>
+                            <div class="demo-bar-track">
+                                <div class="demo-bar-fill demo-bar-politics" id="barPolitics" style="width:0%"></div>
+                            </div>
+                            <span class="demo-bar-pct" id="pctPolitics">0%</span>
+                        </div>
+                        <div class="demo-bar-row">
+                            <span class="demo-bar-label">Sports ⚽</span>
+                            <div class="demo-bar-track">
+                                <div class="demo-bar-fill demo-bar-sports" id="barSports" style="width:0%"></div>
+                            </div>
+                            <span class="demo-bar-pct" id="pctSports">0%</span>
+                        </div>
+                    </div>
+                    <div class="demo-model-tag" id="resultModelTag">SVM + TF-IDF (Unigram) · 91.46% test accuracy</div>
+                </div>
+
+                <!-- Error state -->
+                <div class="demo-error" id="demoError">
+                    <span>⚠️</span>
+                    <span id="errorMsg">Something went wrong. The model might be loading — please try again in a few seconds.</span>
+                </div>
+            </div>
+        </div>
+    </section>
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-inner">
@@ -1665,7 +2117,130 @@
             shape.style.transform = `translateY(${scrollY * speed}px)`;
         });
     });
+// ══════════════════════════════════════════════════════
+// LIVE DEMO — Add at the end of your <script> block
+// ══════════════════════════════════════════════════════
 
+// ⚠️ REPLACE with your actual Hugging Face Space URL
+const HF_SPACE_URL = 'https://priyadip-sports-politics-classifier.hf.space';
+
+// Currently selected model (default: SVM)
+let selectedModel = 'SVM (Best — 91.46%)';
+
+// Model display names for the result tag
+const MODEL_SHORT_NAMES = {
+    'SVM (Best — 91.46%)': 'SVM + TF-IDF · 91.46% accuracy',
+    'Logistic Regression (91.23%)': 'Logistic Regression · 91.23% accuracy',
+    'Random Forest (91.07%)': 'Random Forest · 91.07% accuracy',
+    'Naive Bayes (89.21%)': 'Naive Bayes · 89.21% accuracy',
+    'Gradient Boosting (88.51%)': 'Gradient Boosting · 88.51% accuracy',
+};
+
+// Model selector
+function selectModel(card) {
+    document.querySelectorAll('.demo-model-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    selectedModel = card.dataset.model;
+}
+
+// Character counter
+const demoInput = document.getElementById('demoInput');
+const charCount = document.getElementById('charCount');
+demoInput.addEventListener('input', () => {
+    charCount.textContent = `${demoInput.value.length.toLocaleString()} / 5,000`;
+});
+
+// Fill example text
+function fillExample(chip) {
+    demoInput.value = chip.textContent;
+    charCount.textContent = `${demoInput.value.length.toLocaleString()} / 5,000`;
+    demoInput.focus();
+}
+
+// Main classify function
+async function classifyText() {
+    const text = demoInput.value.trim();
+    if (!text) {
+        demoInput.focus();
+        return;
+    }
+
+    const btn = document.getElementById('classifyBtn');
+    const resultCard = document.getElementById('demoResult');
+    const errorCard = document.getElementById('demoError');
+
+    // Reset states
+    resultCard.classList.remove('show');
+    errorCard.classList.remove('show');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+        // Gradio API: data array must match input order [text, model_name]
+        const response = await fetch(`${HF_SPACE_URL}/api/predict`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: [text, selectedModel] }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        // Gradio returns { data: [ { label, confidences: [{label, confidence}] } ] }
+        const prediction = result.data[0];
+        const confidences = prediction.confidences;
+
+        let politicsConf = 0;
+        let sportsConf = 0;
+
+        confidences.forEach(c => {
+            if (c.label.includes('Politics')) politicsConf = c.confidence;
+            if (c.label.includes('Sports')) sportsConf = c.confidence;
+        });
+
+        const isSports = sportsConf > politicsConf;
+        const topConf = Math.max(politicsConf, sportsConf);
+
+        // Update result UI
+        document.getElementById('resultIcon').textContent = isSports ? '⚽' : '🏛️';
+        document.getElementById('resultLabel').textContent = isSports ? 'Sports' : 'Politics';
+        document.getElementById('resultConfidence').textContent =
+            `${(topConf * 100).toFixed(1)}% confidence`;
+
+        // Animate bars
+        requestAnimationFrame(() => {
+            document.getElementById('barPolitics').style.width = `${(politicsConf * 100).toFixed(1)}%`;
+            document.getElementById('barSports').style.width = `${(sportsConf * 100).toFixed(1)}%`;
+        });
+        document.getElementById('pctPolitics').textContent = `${(politicsConf * 100).toFixed(1)}%`;
+        document.getElementById('pctSports').textContent = `${(sportsConf * 100).toFixed(1)}%`;
+
+        // Show which model was used
+        document.getElementById('resultModelTag').textContent =
+            MODEL_SHORT_NAMES[selectedModel] || selectedModel;
+
+        resultCard.classList.add('show');
+
+    } catch (err) {
+        console.error('Classification error:', err);
+        document.getElementById('errorMsg').textContent =
+            'Could not reach the model. The Hugging Face Space might be sleeping — please wait ~30s and try again.';
+        errorCard.classList.add('show');
+    } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+    }
+}
+
+// Ctrl+Enter / Cmd+Enter to submit
+demoInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        classifyText();
+    }
+});
     </script>
 
 </body>
