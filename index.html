@@ -2157,6 +2157,43 @@ function fillExample(chip) {
     demoInput.focus();
 }
 
+// ── Gradio 5.x API helper (two-step: submit → poll) ──
+async function callGradioAPI(text, modelName) {
+    // Step 1: Submit the job
+    const submitRes = await fetch(`${HF_SPACE_URL}/call/predict`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: [text, modelName] }),
+    });
+
+    if (!submitRes.ok) {
+        throw new Error(`Submit failed: ${submitRes.status}`);
+    }
+
+    const { event_id } = await submitRes.json();
+
+    // Step 2: Poll for the result (SSE stream)
+    const resultRes = await fetch(`${HF_SPACE_URL}/call/predict/${event_id}`);
+
+    if (!resultRes.ok) {
+        throw new Error(`Result fetch failed: ${resultRes.status}`);
+    }
+
+    // Parse the SSE response
+    const responseText = await resultRes.text();
+    const lines = responseText.split('\n');
+
+    for (const line of lines) {
+        if (line.startsWith('data: ')) {
+            const jsonStr = line.slice(6); // remove "data: "
+            const parsed = JSON.parse(jsonStr);
+            return parsed; // This is the array of outputs
+        }
+    }
+
+    throw new Error('No data in response');
+}
+
 // Main classify function
 async function classifyText() {
     const text = demoInput.value.trim();
@@ -2176,21 +2213,10 @@ async function classifyText() {
     btn.disabled = true;
 
     try {
-        // Gradio API: data array must match input order [text, model_name]
-        const response = await fetch(`${HF_SPACE_URL}/api/predict`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: [text, selectedModel] }),
-        });
+        const result = await callGradioAPI(text, selectedModel);
 
-        if (!response.ok) {
-            throw new Error(`Server returned ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        // Gradio returns { data: [ { label, confidences: [{label, confidence}] } ] }
-        const prediction = result.data[0];
+        // result is an array: [ { label, confidences: [...] } ]
+        const prediction = result[0];
         const confidences = prediction.confidences;
 
         let politicsConf = 0;
